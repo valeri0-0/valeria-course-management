@@ -1,0 +1,29 @@
+name: CI/CD Pipeline
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    container:
+      image: eclipse-temurin:21
+
+    steps:
+    - name: clone repository
+      uses: actions/checkout@v3
+
+    - name: nastroyka prav mvnw
+      run: chmod +x mvnw
+
+    - name: zapusk sborki Maven
+      run: ./mvnw clean package
+
+    - name: save artifacts jar
+      uses: actions/upload-artifact@v4
+      with:
+        name: application-jar
+        path: target/*.jar
+        retention-days: 60
