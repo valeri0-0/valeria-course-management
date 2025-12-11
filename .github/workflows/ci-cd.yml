@@ -38,17 +38,12 @@ jobs:
 
     - name: Install Semgrep
       run: |
-        python -m pip install --upgrade pip
-        pip install semgrep
-
-    - name: Run Semgrep SAST scan
-      uses: returntocorp/semgrep-action@v1
-      with:
-        config: auto
-        output-format: sarif
-        output-file: semgrep-report.sarif
+        python3 -m pip install --upgrade pip
+        pip3 install semgrep
+        semgrep scan --config auto --sarif --output security-report.sarif
 
     - name: Upload SARIF report to GitHub Security
       uses: github/codeql-action/upload-sarif@v4
       with:
         sarif_file: semgrep-report.sarif
+        wait-for-processing: true
