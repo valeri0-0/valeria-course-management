@@ -71,3 +71,105 @@ jobs:
         with:
           name: sca-report
           path: target/dependency-check-report/
+
+  # DAST Baseline
+  dast-baseline:
+    needs: build
+    runs-on: ubuntu-latest
+
+    container:
+      image: ghcr.io/zaproxy/zaproxy:latest
+      options: --user root
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Java 21
+        run: |
+          apt-get update
+          apt-get install -y wget
+          cd /opt
+          wget https://download.java.net/java/GA/jdk21.0.2/f2283984656d49d69e91c558476027ac/13/GPL/openjdk-21.0.2_linux-x64_bin.tar.gz
+          tar -xzf openjdk-21.0.2_linux-x64_bin.tar.gz
+
+      - name: Download application jar
+        uses: actions/download-artifact@v4
+        with:
+          name: application-jar
+
+      - name: Prepare ZAP work directory
+        run: mkdir -p /zap/wrk
+
+      - name: Run application
+        run: |
+          /opt/jdk-21.0.2/bin/java -jar *.jar &
+          sleep 30
+
+      - name: OWASP ZAP Baseline Scan
+        run: |
+          zap-baseline.py \
+            -t http://localhost:8080 \
+            -r report_site.html \
+            -I
+
+      - name: Copy report
+        run: cp /zap/wrk/report_site.html ./report_site.html
+
+      - name: Upload ZAP baseline report
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-baseline-report
+          path: report_site.html
+
+
+  # DAST API Scan
+  dast-api:
+    needs: build
+    runs-on: ubuntu-latest
+
+    container:
+      image: ghcr.io/zaproxy/zaproxy:latest
+      options: --user root
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Java 21
+        run: |
+          apt-get update
+          apt-get install -y wget
+          cd /opt
+          wget https://download.java.net/java/GA/jdk21.0.2/f2283984656d49d69e91c558476027ac/13/GPL/openjdk-21.0.2_linux-x64_bin.tar.gz
+          tar -xzf openjdk-21.0.2_linux-x64_bin.tar.gz
+
+      - name: Download application jar
+        uses: actions/download-artifact@v4
+        with:
+          name: application-jar
+
+      - name: Prepare ZAP work directory
+        run: mkdir -p /zap/wrk
+
+      - name: Run application
+        run: |
+          /opt/jdk-21.0.2/bin/java -jar *.jar &
+          sleep 30
+
+      - name: OWASP ZAP API Scan
+        run: |
+          zap-api-scan.py \
+            -t http://localhost:8080/v3/api-docs \
+            -f openapi \
+            -r report_api.html \
+            -I
+
+      - name: Copy report
+        run: cp /zap/wrk/report_api.html ./report_api.html
+
+      - name: Upload ZAP API report
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-api-report
+          path: report_api.html
