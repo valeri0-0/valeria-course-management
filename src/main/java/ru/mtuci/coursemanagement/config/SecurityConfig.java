@@ -14,6 +14,7 @@ public class SecurityConfig {
             .contentSecurityPolicy(csp -> csp
                     .policyDirectives("default-src 'self'")
             )
+                 .frameOptions(frame -> frame.deny())
     );
         return http.build();
     }
