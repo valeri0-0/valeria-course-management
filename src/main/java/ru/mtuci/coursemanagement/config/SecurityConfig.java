@@ -9,7 +9,12 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception
     {
-        http.csrf(csrf -> {});
+        http.csrf(csrf -> {})
+         .headers(headers -> headers
+            .contentSecurityPolicy(csp -> csp
+                    .policyDirectives("default-src 'self'")
+            )
+    );
         return http.build();
     }
 }
