@@ -23,7 +23,6 @@ import java.util.List;
 
 @Slf4j
 @Controller
-@CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class CourseController {
     private final CourseRepository repo;
